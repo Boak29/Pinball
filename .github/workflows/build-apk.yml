@@ -25,54 +25,187 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+      - name: Remove system Gradle
+        run: |
+          sudo rm -f /usr/bin/gradle
+          sudo rm -rf /usr/share/gradle*
+          echo "System Gradle removed"
 
       - name: Install Gradle 8.10
         run: |
           wget -q https://services.gradle.org/distributions/gradle-8.10-bin.zip -O /tmp/gradle.zip
           sudo unzip -q /tmp/gradle.zip -d /opt
-          echo "/opt/gradle-8.10/bin" >> $GITHUB_PATH
+          sudo ln -sf /opt/gradle-8.10/bin/gradle /usr/bin/gradle
+          gradle --version | head -3
 
-      - name: Install Cordova
-        run: npm install -g cordova
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Add Android platform
-        run: cordova platform add android --nofetch
-
-      - name: Force Gradle 8.10 in wrapper
+      - name: Create project directories
         run: |
-          mkdir -p platforms/android/gradle/wrapper
-          cat > platforms/android/gradle/wrapper/gradle-wrapper.properties << 'EOF'
-          distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.10-bin.zip
-          networkTimeout=10000
-          validateDistributionUrl=true
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists
+          mkdir -p app/src/main/java/com/tikpinball/app
+          mkdir -p app/src/main/res/values
+          mkdir -p app/src/main/res/mipmap-hdpi
+          mkdir -p app/src/main/res/mipmap-mdpi
+          mkdir -p app/src/main/res/mipmap-xhdpi
+          mkdir -p app/src/main/res/mipmap-xxhdpi
+          mkdir -p app/src/main/res/drawable
+          mkdir -p gradle/wrapper
+
+      - name: Generate AndroidManifest.xml
+        run: |
+          cat > app/src/main/AndroidManifest.xml << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              package="com.tikpinball.app"
+              android:versionCode="1"
+              android:versionName="1.0.0">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <application
+                  android:allowBackup="false"
+                  android:label="TikPinball"
+                  android:supportsRtl="true"
+                  android:theme="@style/AppTheme"
+                  android:usesCleartextTraffic="false">
+                  <activity
+                      android:name=".MainActivity"
+                      android:configChanges="keyboardHidden|orientation|screenSize"
+                      android:exported="true"
+                      android:screenOrientation="portrait"
+                      android:windowSoftInputMode="adjustResize">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
           EOF
 
+      - name: Generate MainActivity.java
+        run: |
+          cat > app/src/main/java/com/tikpinball/app/MainActivity.java << 'JAVAEOF'
+          package com.tikpinball.app;
+          import android.os.Bundle;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import androidx.appcompat.app.AppCompatActivity;
+          public class MainActivity extends AppCompatActivity {
+              private WebView webView;
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  webView = new WebView(this);
+                  setContentView(webView);
+                  WebSettings settings = webView.getSettings();
+                  settings.setJavaScriptEnabled(true);
+                  settings.setDomStorageEnabled(true);
+                  settings.setAllowFileAccess(false);
+                  settings.setAllowContentAccess(false);
+                  settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+                  webView.setWebViewClient(new WebViewClient());
+                  String gameUrl = "https://boak29.github.io/Pinball/PinballGame.htm?user=@USERNAME&ws=wss://tikpinball-relay.onrender.com";
+                  webView.loadUrl(gameUrl);
+              }
+              @Override
+              public void onBackPressed() {
+                  if (webView.canGoBack()) webView.goBack();
+                  else super.onBackPressed();
+              }
+          }
+          JAVAEOF
+
+      - name: Generate build.gradle
+        run: |
+          cat > app/build.gradle << 'EOF'
+          apply plugin: 'com.android.application'
+          android {
+              namespace 'com.tikpinball.app'
+              compileSdk 34
+              defaultConfig {
+                  applicationId "com.tikpinball.app"
+                  minSdk 23
+                  targetSdk 34
+                  versionCode 1
+                  versionName "1.0.0"
+              }
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                  }
+              }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+          dependencies {
+              implementation 'androidx.appcompat:appcompat:1.6.1'
+          }
+          EOF
+
+      - name: Generate settings.gradle
+        run: |
+          cat > settings.gradle << 'EOF'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolution {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = 'TikPinball'
+          include ':app'
+          EOF
+
+      - name: Generate build.gradle (root)
+        run: |
+          cat > build.gradle << 'EOF'
+          plugins {
+              id 'com.android.application' version '8.2.2' apply false
+          }
+          EOF
+
+      - name: Generate gradle.properties
+        run: |
+          cat > gradle.properties << 'EOF'
+          org.gradle.jvmargs=-Xmx2048m
+          android.useAndroidX=true
+          EOF
+
+      - name: Generate styles.xml
+        run: |
+          cat > app/src/main/res/values/styles.xml << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+                  <item name="android:windowFullscreen">true</item>
+                  <item name="android:windowNoTitle">true</item>
+              </style>
+          </resources>
+          EOF
+
+      - name: Create local.properties
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+
       - name: Build APK
-        run: cordova build android --release
+        run: |
+          gradle assembleRelease --no-daemon
+          echo "=== Build complete ==="
+          find . -name "*.apk" -type f
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: TikPinball-APK
-          path: tikpinball-app/platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk
-          compression-level: 0
-          if-no-files-found: warn
-
-      - name: Upload debug APK as fallback
-        uses: actions/upload-artifact@v4
-        with:
-          name: TikPinball-APK-debug
-          path: tikpinball-app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          path: tikpinball-app/app/build/outputs/apk/release/app-release-unsigned.apk
           compression-level: 0
           if-no-files-found: warn

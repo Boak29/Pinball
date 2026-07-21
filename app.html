@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="Pinball.json">
+    <link rel="icon" sizes="192x192" href="PinballFavIcon_192x192.png">
+    <title>TikPinball - TikTok LIVE Pinball</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%;
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+            overflow: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 30px;
+            text-align: center;
+        }
+        .ball-icon {
+            width: 72px; height: 72px;
+            background: radial-gradient(circle at 35% 35%, #ff6b6b, #c0392b);
+            border-radius: 50%;
+            margin-bottom: 16px;
+            box-shadow: 0 0 40px rgba(255,107,107,0.4);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+        h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg,#ff6b6b,#ffd93d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .sub { color: #888; font-size: 13px; margin: 6px 0 30px; }
+        input {
+            width: 100%; max-width: 280px;
+            padding: 14px 16px;
+            border: 2px solid #333; border-radius: 12px;
+            background: #1a1a1a; color: #fff;
+            font-size: 16px; outline: none;
+        }
+        input:focus { border-color: #ff6b6b; }
+        .status { font-size: 12px; margin: 8px 0; min-height: 18px; color: #ffd93d; }
+        button {
+            width: 100%; max-width: 280px;
+            padding: 16px; margin-top: 8px;
+            border: none; border-radius: 12px;
+            background: linear-gradient(135deg,#ff6b6b,#ee5a24);
+            color: #fff; font-size: 16px; font-weight: 600;
+            cursor: pointer;
+        }
+        button:active { transform: scale(0.97); }
+        button:disabled { opacity: 0.5; }
+        .hint { font-size: 11px; color: #555; margin-top: 30px; line-height: 1.5; }
+        .version { color: #333; font-size: 10px; margin-top: 6px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="ball-icon"></div>
+        <h1>TikPinball</h1>
+        <p class="sub">TikTok LIVE Interactive Game</p>
+
+        <input type="text" id="username" placeholder="TikTok username" autocomplete="off" autocorrect="no" autocapitalize="no" spellcheck="false">
+        <div class="status" id="status"></div>
+        <button id="startBtn" onclick="startGame()">Start Game</button>
+
+        <p class="hint">Enter your TikTok username to start<br>the interactive LIVE game.</p>
+        <p class="version">v1.0</p>
+    </div>
+    <script>
+        var RELAY = 'wss://tikpinball-relay.onrender.com';
+        var GAME_URL = 'https://boak29.github.io/Pinball/PinballGame.htm';
+
+        var saved = localStorage.getItem('tikpinball_user');
+        if (saved) document.getElementById('username').value = saved;
+
+        document.getElementById('username').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') startGame();
+        });
+
+        function startGame() {
+            var user = document.getElementById('username').value.trim();
+            if (!user) {
+                document.getElementById('status').textContent = 'Enter your TikTok username';
+                return;
+            }
+            localStorage.setItem('tikpinball_user', user);
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('startBtn').textContent = 'Loading...';
+            window.location.href = GAME_URL + '?user=' + encodeURIComponent(user) + '&ws=' + encodeURIComponent(RELAY);
+        }
+    </script>
+</body>
+</html>
