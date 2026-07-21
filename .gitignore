@@ -1,5 +1,9 @@
 node_modules/
 tiktok-relay-server/node_modules/
+tikpinball-app/node_modules/
+tikpinball-app/platforms/
+tikpinball-app/plugins/
+tikpinball-app/TikPinball.apk
 .DS_Store
 Thumbs.db
 *.log

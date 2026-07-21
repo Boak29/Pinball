@@ -1,0 +1,51 @@
+name: Build APK
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - 'tikpinball-app/**'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tikpinball-app
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Cordova
+        run: npm install -g cordova
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Add Android platform
+        run: cordova platform add android --nofetch
+
+      - name: Build APK
+        run: cordova build android --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: TikPinball-APK
+          path: tikpinball-app/platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk
+          compression-level: 0
+          if-no-files-found: warn

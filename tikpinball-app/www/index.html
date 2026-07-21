@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TikPinball</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="splash">
+        <div class="logo">
+            <div class="ball-icon"></div>
+            <h1>TikPinball</h1>
+            <p class="subtitle">TikTok LIVE Interactive Game</p>
+        </div>
+
+        <div class="login-form">
+            <label for="username">TikTok Username</label>
+            <input type="text" id="username" placeholder="e.g. pinball_streamer" autocomplete="off" autocorrect="no" autocapitalize="no" spellcheck="false">
+            <div class="status" id="status"></div>
+            <button id="startBtn" onclick="startGame()">Start Game</button>
+        </div>
+
+        <div class="footer">
+            <p>Enter your TikTok username to start the interactive LIVE game.<br>
+            Viewers can send gifts to trigger actions in-game!</p>
+            <p class="version">v1.0.0</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

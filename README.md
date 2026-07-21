@@ -73,6 +73,57 @@ PinballGame.htm?user=test_user
 ```
 Game akan tetap berjalan normal tanpa koneksi TikTok.
 
+---
+
+## TikPinball APK (Android)
+
+Aplikasi Android all-in-one — install APK, masukin username TikTok, langsung main.
+
+### Download APK
+
+1. Buka **Actions** tab di repo ini: https://github.com/Boak29/Pinball/actions
+2. Pilih workflow **"Build APK"**
+3. Klik workflow run terbaru
+4. Scroll ke **Artifacts** → download **TikPinball-APK.zip**
+5. Ekstrak → install `app-release-unsigned.apk` ke HP Android
+   - *Abaikan peringatan "unsigned" — aman untuk install manual*
+
+Atau build sendiri dengan script `tikpinball-app/build-apk.ps1`.
+
+### Cara Pakai APK
+
+1. Install APK di HP Android
+2. Buka aplikasi **TikPinball**
+3. Masukkan **username TikTok** kamu (tanpa @)
+4. Tap **Start Game**
+5. Mulai TikTok LIVE dari HP (screen record / share screen)
+6. Penonton kirim gift → game bereaksi otomatis
+
+### Catatan
+
+- APK hanya butuh **username TikTok** — tanpa password
+- Koneksi internet diperlukan (untuk load game + konek relay server)
+- Relay server harus online (deploy ke Render — lihat instruksi di atas)
+- Game tetap bisa dimainkan tanpa koneksi TikTok (sebagai pinball biasa)
+
+---
+
+## Android APK - Build dari Source
+
+### Prasyarat
+- Node.js 18+
+- Java JDK 17
+- Android Studio + Android SDK
+
+### Build Lokal (Windows)
+```powershell
+cd tikpinball-app
+.\build-apk.ps1
+```
+
+### Build via GitHub Actions (otomatis)
+Push perubahan ke folder `tikpinball-app/` → Actions otomatis build APK.
+
 ## Based on the work of:
 
 https://phaser.io/examples/v2/box2d/pinball
