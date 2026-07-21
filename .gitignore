@@ -1,0 +1,5 @@
+node_modules/
+tiktok-relay-server/node_modules/
+.DS_Store
+Thumbs.db
+*.log
